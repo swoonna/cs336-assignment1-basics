@@ -19,6 +19,7 @@ dependencies = [
     "wandb>=0.25",
     "ty>=0.0.26",
     "ruff>=0.15.8",
+    "ipykernel>=7.2.0",
 ]
 
 [build-system]
