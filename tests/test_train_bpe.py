@@ -86,3 +86,71 @@ def test_train_bpe_special_tokens(snapshot):
             "merges": merges,
         },
     )
+
+def test_train_bpe_tinystories():
+    """
+    Ensure that the special tokens are added to the vocabulary and not
+    merged with other tokens.
+    """
+    import time
+    from memory_profiler import memory_usage
+
+    input_path = "/Users/swoonna/LearnML/cs336/cs336-assignment1-basics/data/TinyStoriesV2-GPT4-train.txt"
+
+    start_time = time.time()
+    mem_samples, (vocab, merges) = memory_usage(
+        (run_train_bpe, [], {
+            "input_path": input_path,
+            "vocab_size": 10010,
+            "special_tokens": ["<|endoftext|>"],
+        }),
+        retval=True,
+        interval=0.1,
+    )
+    elapsed = time.time() - start_time
+    print(f"\nWall-clock time: {elapsed:.1f}s")
+    print(f"Peak memory: {max(mem_samples):.1f} MB")
+
+    # Check that the special token is not in the vocab
+    vocabs_without_specials = [word for word in vocab.values() if word != b"<|endoftext|>"]
+    for word_bytes in vocabs_without_specials:
+        assert b"<|" not in word_bytes
+
+    print(f"\nVocab size: {len(vocab)}")
+    print(f"Total merges: {len(merges)}")
+    print("\nFirst 10 merges:")
+    for a, b_ in merges:
+        print(f"  {a!r} + {b_!r} -> {(a + b_)!r}")
+
+    print("\nLongest token:")
+    longest = max(vocab.values(), key=len)
+    print(f"  {longest!r}  ({len(longest)} bytes)  ->  {longest.decode('utf-8', errors='replace')!r}")
+
+
+def test_train_bpe_openwebtext():
+    """
+    Ensure that the special tokens are added to the vocabulary and not
+    merged with other tokens.
+    """
+    input_path = "/Users/swoonna/LearnML/cs336/cs336-assignment1-basics/data/owt_train.txt"
+    vocab, merges = run_train_bpe(
+        input_path=input_path,
+        vocab_size=32000,
+        special_tokens=["<|endoftext|>"],
+    )
+
+    # Check that the special token is not in the vocab
+    vocabs_without_specials = [word for word in vocab.values() if word != b"<|endoftext|>"]
+    for word_bytes in vocabs_without_specials:
+        assert b"<|" not in word_bytes
+
+    print(f"\nVocab size: {len(vocab)}")
+    print(f"Total merges: {len(merges)}")
+    print("\nFirst 10 merges:")
+    for a, b_ in merges:
+        print(f"  {a!r} + {b_!r} -> {(a + b_)!r}")
+
+    print("\nLongest token:")
+    longest = max(vocab.values(), key=len)
+    print(f"  {longest!r}  ({len(longest)} bytes)  ->  {longest.decode('utf-8', errors='replace')!r}")
+

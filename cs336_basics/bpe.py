@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+import logging
 import os
 import re
 from collections import defaultdict
@@ -259,6 +261,7 @@ def train_bpe(
     vocab  : dict[int, bytes]  — token ID to its byte representation.
     merges : list[tuple[bytes, bytes]]  — ordered BPE merge operations.
     """
+    print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - Started.")
     # 1. Vocabulary initialisation ---------------------------------------- #
     vocab: dict[int, bytes] = {i: bytes([i]) for i in range(256)}
     next_id = 256
@@ -274,9 +277,11 @@ def train_bpe(
 
     # 2. Pre-tokenise corpus ---------------------------------------------- #
     token_freqs = _pre_tokenize_file(input_path, special_tokens, num_workers)
+    print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - Pre tokenization done.")
 
     # 3. Build pair index once -------------------------------------------- #
     pair_counts, pair_to_tokens = _build_pair_index(token_freqs)
+    print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - Done with building pair indexes")
 
     # 4. Merge loop -------------------------------------------------------- #
     merges: list[tuple[bytes, bytes]] = []
@@ -292,5 +297,6 @@ def train_bpe(
         next_id += 1
 
         _apply_merge(token_freqs, pair_counts, pair_to_tokens, best_pair, merged_bytes)
+    print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - Done with merging")
 
     return vocab, merges
